@@ -59,7 +59,8 @@ def save_jobs_to_excel(jobs_list, filename):
 
 def load_indeed_jobs_div(job_title, location):
     getVars = {'q' : job_title, 'l' : location, 'fromage' : 'last', 'sort' : 'date'}
-    url = ('https://www.indeed.co.uk/jobs?' + urllib.parse.urlencode(getVars))
+    url = ('https://www.indeed.com/jobs?' + urllib.parse.urlencode(getVars))
+    print (url)
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     job_soup = soup.find(id="resultsCol")
@@ -99,7 +100,14 @@ def extract_job_information_indeed(job_soup, desired_characs):
         for job_elem in job_elems:
             dates.append(extract_date_indeed(job_elem))
         extracted_info.append(dates)
-    
+
+    if 'description' in desired_characs:
+        descriptions = []
+        cols.append('description')
+        for job_elem in job_elems:
+            descriptions.append(extract_descriptions_indeed(job_elem))
+        extracted_info.append(descriptions)
+
     jobs_list = {}
     
     for j in range(len(cols)):
@@ -122,7 +130,7 @@ def extract_company_indeed(job_elem):
 
 def extract_link_indeed(job_elem):
     link = job_elem.find('a')['href']
-    link = 'www.Indeed.co.uk/' + link
+    link = 'https://www.indeed.com' + link
     return link
 
 def extract_date_indeed(job_elem):
@@ -130,7 +138,14 @@ def extract_date_indeed(job_elem):
     date = date_elem.text.strip()
     return date
 
-
+def extract_descriptions_indeed(job_elem):
+    URL = str(extract_link_indeed(job_elem))
+    print(URL)
+    page_d = requests.get(URL)
+    soup_d = BeautifulSoup(page_d.content, "html.parser")
+    description = soup_d.find('div', id="jobDescriptionText")
+    description = description.text.strip()
+    return description
 
 ## ================== FUNCTIONS FOR CWJOBS.CO.UK =================== ##
     
